@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	starlibtime "github.com/qri-io/starlib/time"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
+
+	starlibtime "github.com/qri-io/starlib/time"
 )
 
 // asString unquotes a starlark string value
@@ -146,7 +147,12 @@ func Unmarshal(x starlark.Value) (val interface{}, err error) {
 			}
 			val = _var
 		} else {
-			err = fmt.Errorf("constructor object from *starlarkstruct.Struct not supported Marshaler to starlark object: %s", v.Constructor().Type())
+			dict := new(starlark.Dict)
+			for _, name := range v.AttrNames() {
+				val, _ := v.Attr(name)
+				dict.SetKey(starlark.String(name), val)
+			}
+			val, err = Unmarshal(dict)
 		}
 	default:
 		fmt.Println("errbadtype:", x.Type())
@@ -190,6 +196,159 @@ func Marshal(data interface{}) (v starlark.Value, err error) {
 		v = starlark.Float(x)
 	case time.Time:
 		v = starlibtime.Time(x)
+	case []bool:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []string:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []int:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []int8:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []int16:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []int32:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []int64:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []uint:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []uint8:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []uint16:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []uint32:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []uint64:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []float32:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []float64:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []time.Time:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []map[interface{}]interface{}:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
+	case []map[string]interface{}:
+		var elems = make([]starlark.Value, len(x))
+		for i, val := range x {
+			elems[i], err = Marshal(val)
+			if err != nil {
+				return
+			}
+		}
+		v = starlark.NewList(elems)
 	case []interface{}:
 		var elems = make([]starlark.Value, len(x))
 		for i, val := range x {
