@@ -3,7 +3,9 @@ package util
 import (
 	"fmt"
 	"testing"
+	"time"
 
+	starlibtime "github.com/qri-io/starlib/time"
 	"github.com/stretchr/testify/assert"
 	"go.starlark.net/starlark"
 	"go.starlark.net/starlarkstruct"
@@ -74,6 +76,7 @@ func TestMarshal(t *testing.T) {
 		{uint64(42), starlark.MakeUint64(42), ""},
 		{float32(42), starlark.Float(42), ""},
 		{42., starlark.Float(42), ""},
+		{time.Unix(1588540633, 0), starlibtime.Time(time.Unix(1588540633, 0)), ""},
 		{[]interface{}{42}, starlark.NewList([]starlark.Value{starlark.MakeInt(42)}), ""},
 		{map[string]interface{}{"foo": 42}, expectedStringDict, ""},
 		{map[interface{}]interface{}{"foo": 42}, expectedStringDict, ""},
@@ -128,12 +131,14 @@ func TestUnmarshal(t *testing.T) {
 		{starlark.MakeUint64(42), uint64(42), ""},
 		{starlark.Float(42), float32(42), ""},
 		{starlark.Float(42), 42., ""},
+		{starlibtime.Time(time.Unix(1588540633, 0)), time.Unix(1588540633, 0), ""},
 		{starlark.NewList([]starlark.Value{starlark.MakeInt(42)}), []interface{}{42}, ""},
 		{strDict, map[string]interface{}{"foo": 42}, ""},
 		{intDict, map[interface{}]interface{}{42 * 2: 42}, ""},
 		{ct, &customType{42}, ""},
 		{strDictCT, map[string]interface{}{"foo": 42, "bar": &customType{42}}, ""},
 		{starlark.NewList([]starlark.Value{starlark.MakeInt(42), ct}), []interface{}{42, &customType{42}}, ""},
+		{starlark.Tuple{starlark.String("foo"), starlark.MakeInt(42)}, []interface{}{"foo", 42}, ""},
 	}
 
 	for i, c := range cases {
@@ -153,13 +158,19 @@ type invalidCustomType struct {
 
 type customType invalidCustomType
 
-func (t *customType) UnmarshalStarlark(v starlark.Value) error {
+var (
+	_ Unmarshaler    = (*customType)(nil)
+	_ Marshaler      = (*customType)(nil)
+	_ starlark.Value = (*customType)(nil)
+)
+
+func (c *customType) UnmarshalStarlark(v starlark.Value) error {
 	// asserts
 	if v.Type() != "struct" {
 		return fmt.Errorf("not expected top level type, want struct, got %q", v.Type())
 	}
 	if _, ok := v.(*starlarkstruct.Struct).Constructor().(*customType); !ok {
-		return fmt.Errorf("not expected construct type got %T, want %T", v.(*starlarkstruct.Struct).Constructor(), t)
+		return fmt.Errorf("not expected construct type got %T, want %T", v.(*starlarkstruct.Struct).Constructor(), c)
 	}
 
 	// TODO: refactoring transform data
@@ -172,15 +183,15 @@ func (t *customType) UnmarshalStarlark(v starlark.Value) error {
 	data := starlark.StringDict{}
 	v.(*starlarkstruct.Struct).ToStringDict(data)
 
-	*t = customType{
+	*c = customType{
 		Foo: mustInt64(data["foo"]),
 	}
 	return nil
 }
 
-func (t *customType) MarshalStarlark() (starlark.Value, error) {
+func (c *customType) MarshalStarlark() (starlark.Value, error) {
 	v := starlarkstruct.FromStringDict(&customType{}, starlark.StringDict{
-		"foo": starlark.MakeInt64(t.Foo),
+		"foo": starlark.MakeInt64(c.Foo),
 	})
 	return v, nil
 }

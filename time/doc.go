@@ -11,6 +11,8 @@ package from the go standard library.
         parse a location
       time(string, format=..., location=...) time
         parse a time
+      fromtimestamptime(int) time
+        parse a Unix timestamp
       now() time
         implementations would be able to make this a constant
       zero() time
@@ -37,11 +39,16 @@ package from the go standard library.
           minute() int
           second() int
           nanosecond() int
-		  in_location(string) time
-		  	get time representing the same instant but in a different location
-		  format(string) string
-		  	textual representation of time formatted according to the provided
-			layout string
+          unix() int
+          unix_nano() int
+          in_location(string) time
+            get time representing the same instant but in a different location
+          format(string) string
+            textual representation of time formatted according to the provided
+            layout string
+          strftime(string) string
+            textual representation of time formatted according to the provided C-style strftime format string
+            layout string
         operators:
           time == time = boolean
           time < time = boolean
