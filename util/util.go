@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"time"
 
@@ -33,7 +34,15 @@ func Unmarshal(x starlark.Value) (val interface{}, err error) {
 	case starlark.Bool:
 		val = v.Truth() == starlark.True
 	case starlark.Int:
-		val, err = starlark.AsInt32(x)
+		if i, ok := v.Int64(); !ok {
+			err = fmt.Errorf("couldn't parse int")
+		} else {
+			if math.MinInt32 <= i && i <= math.MaxInt32 {
+				val = int(i)
+			} else {
+				val = i
+			}
+		}
 	case starlark.Float:
 		if f, ok := starlark.AsFloat(x); !ok {
 			err = fmt.Errorf("couldn't parse float")
