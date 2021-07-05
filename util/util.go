@@ -163,6 +163,15 @@ func Unmarshal(x starlark.Value) (val interface{}, err error) {
 			}
 			val, err = Unmarshal(dict)
 		}
+	case starlark.HasAttrs:
+		dict := new(starlark.Dict)
+		for _, name := range v.AttrNames() {
+			val, _ := v.Attr(name)
+			if val.Type() != "builtin_function_or_method" {
+				dict.SetKey(starlark.String(name), val)
+			}
+		}
+		val, err = Unmarshal(dict)
 	default:
 		fmt.Println("errbadtype:", x.Type())
 		err = fmt.Errorf("unrecognized starlark type: %s", x.Type())
